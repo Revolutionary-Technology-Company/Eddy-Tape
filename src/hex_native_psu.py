@@ -108,6 +108,44 @@ class RomulanMasterTapeSystem:
             "hex_power_register": hex(p_raw)
         }
 
+    # Insert this class directly into your hex_native_psu.py file
+class PhysicalTrackSwitchboard:
+    def __init__(self):
+        """Defines the mechanical track routing topology."""
+        self.switch_registry = {
+            "SWITCH_0x01": {"current_position": "STRAIGHT", "line_a": "MAIN_RAMP", "line_b": "STORAGE_BAY_1"},
+            "SWITCH_0x02": {"current_position": "STRAIGHT", "line_a": "STORAGE_BAY_1", "line_b": "TURNTABLE_ENTRY"}
+        }
+
+    def toggle_junction(self, switch_id, target_direction, bus_handle=None, address=0x5E):
+        """
+        Commands the tracking robot or mechanical guide rail to divert paths.
+        Sends a hex signal over the I2C bus to trigger physical relays.
+        """
+        if switch_id not in self.switch_registry:
+            print(f"ERROR: Track switch {switch_id} does not exist.")
+            return False
+            
+        if target_direction in ["STRAIGHT", "DIVERTED"]:
+            self.switch_registry[switch_id]["current_position"] = target_direction
+            active_route = (self.switch_registry[switch_id]["line_a"] 
+                            if target_direction == "STRAIGHT" 
+                            else self.switch_registry[switch_id]["line_b"])
+            
+            print(f"Junction {switch_id} toggled to {target_direction}. Active path: -> {active_route}")
+            
+            # Physical Hardware Execution Layer
+            if bus_handle:
+                try:
+                    # Send signal to change the rail direction (0x01 for straight, 0x02 for diverted)
+                    signal_byte = 0x01 if target_direction == "STRAIGHT" else 0x02
+                    # Target register 0x25 on your distribution PCB to flip the physical relay
+                    bus_handle.write_byte_data(address, 0x25, signal_byte)
+                except IOError:
+                    print(f"ERROR: Failed to transmit hardware switch command to {switch_id}")
+            return True
+        return False
+
     def execute_emergency_kill(self):
         """Instantly isolates the parallel tape power rails to safeguard hazardous cargo."""
         print("ALERT: Boundary breach or overload! Isolating core power rails immediately.")
