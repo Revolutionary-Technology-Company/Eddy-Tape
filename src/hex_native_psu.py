@@ -253,3 +253,18 @@ system.process_route_vector(barrel_id="BARREL_0x0A1", current_incline=30.0, next
 
 # Run Scenario 2: Dangerous, top-heavy hazardous container navigating a smooth 45-degree corner
 system.process_route_vector(barrel_id="BARREL_0x0B2", current_incline=0.0, next_turn_angle=45, turn_radius_m=5.0)
+
+if __name__ == "__main__":
+    # 1. Initialize the master power system
+    system = RomulanMasterTapeSystem()
+    
+    # 2. Initialize your newly integrated track switchboard
+    switchboard = PhysicalTrackSwitchboard()
+    
+    print("--- Pre-Routing Track Alignment Phase ---")
+    # Toggle switch 0x01 to direct the cargo away from the main ramp and into Storage Bay 1
+    switchboard.toggle_junction("SWITCH_0x01", "DIVERTED", bus_handle=system.bus)
+    
+    # 3. Resume normal cargo delivery and telemetry checks
+    print("\n--- Commencing Active Transport Sequence ---")
+    system.process_route_vector(barrel_id="BARREL_0x0B2", current_incline=0.0, next_turn_angle=45, turn_radius_m=5.0)
