@@ -211,3 +211,7 @@ if __name__ == "__main__":
     system = RomulanMasterTapeSystem()
     
     # Run Scenario 1: Stable, bottom-heavy barrel hitting a 30-degree ramp board
+system.process_route_vector(barrel_id="BARREL_0x0A1", current_incline=30.0, next_turn_angle=0)
+
+# Run Scenario 2: Dangerous, top-heavy hazardous container navigating a smooth 45-degree corner
+system.process_route_vector(barrel_id="BARREL_0x0B2", current_incline=0.0, next_turn_angle=45, turn_radius_m=5.0)
